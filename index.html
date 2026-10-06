@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quiz Engineering Glossary 2026-2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1ef; --card:#ffffff; --ink:#172229; --muted:#5c6c71; --line:#dbe1de;
+  --btn-bg:#172229; --btn-ink:#f6f3e9; --hl:#b4842c;
+  --ok:#2f7d55; --ok-bg:#e3f2e8; --bad:#ae432f; --bad-bg:#f8e3db;
+  --soft:#f1e7ce; --shadow:0 1px 2px rgba(23,34,41,.05), 0 10px 28px rgba(23,34,41,.07);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1b22; --card:#16252d; --ink:#f3f1e6; --muted:#9aacb1; --line:rgba(243,241,230,.12);
+    --btn-bg:#d9aa49; --btn-ink:#10191f; --hl:#e3b85c;
+    --ok:#82d7a1; --ok-bg:rgba(130,215,161,.13); --bad:#ef8d79; --bad-bg:rgba(239,141,121,.13);
+    --soft:#22323b; --shadow:0 1px 2px rgba(0,0,0,.25), 0 14px 30px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1b22; --card:#16252d; --ink:#f3f1e6; --muted:#9aacb1; --line:rgba(243,241,230,.12);
+  --btn-bg:#d9aa49; --btn-ink:#10191f; --hl:#e3b85c;
+  --ok:#82d7a1; --ok-bg:rgba(130,215,161,.13); --bad:#ef8d79; --bad-bg:rgba(239,141,121,.13);
+  --soft:#22323b; --shadow:0 1px 2px rgba(0,0,0,.25), 0 14px 30px rgba(0,0,0,.35);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Manrope",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;
+}
+#app{max-width:600px;margin:0 auto;padding:22px 18px 34px}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible{outline:3px solid var(--hl);outline-offset:2px}
+input:focus-visible{outline:3px solid var(--hl);outline-offset:1px}
+h1,h2,.disp{font-family:"Fraunces",Georgia,serif;font-weight:600;letter-spacing:-.01em}
+
+.hero{padding:4px 0 20px}
+.hero .tag{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--hl);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+.hero .tag i{width:16px;height:1.5px;background:var(--hl)}
+.hero h1{font-size:clamp(34px,9vw,46px);line-height:1.04;margin:0 0 9px}
+.hero p{margin:0;color:var(--muted);font-size:15.5px}
+
+.sheet{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
+.sheet>.pad{padding:18px 18px 19px}
+.sheet h2{font-size:19px;margin:0 0 12px;font-weight:600}
+.tb{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 18px;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted);background:var(--soft)}
+.tb b{color:var(--ink);font-weight:700}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:16px;background:var(--card);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
+.stats div{padding:14px 6px 12px;text-align:center;border-right:1px solid var(--line)}
+.stats div:last-child{border-right:0}
+.stats b{display:block;font-family:"Fraunces",serif;font-weight:600;font-size:27px;line-height:1}
+.stats span{font-size:11.5px;color:var(--muted)}
+
+.seg{display:flex;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--bg)}
+.segb{flex:1;padding:10px 6px;background:transparent;border:0;border-right:1px solid var(--line);font-weight:600;font-size:13.5px;color:var(--muted)}
+.segb:last-child{border-right:0}
+.segb[aria-pressed="true"]{background:var(--btn-bg);color:var(--btn-ink)}
+.lbl{font-size:12px;color:var(--hl);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:16px 0 7px}
+.lbl:first-of-type{margin-top:0}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{padding:7px 11px;border:1px solid var(--line);border-radius:9px;background:var(--bg);font-size:13px;font-weight:500}
+.chip small{color:var(--muted);margin-left:4px}
+.chip[aria-pressed="true"]{border-color:var(--hl);background:var(--soft);color:var(--ink);font-weight:700}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.link{background:none;border:0;padding:6px 2px;text-decoration:underline;text-underline-offset:3px;color:var(--muted);font-size:13.5px}
+.toggle{display:flex;align-items:center;gap:10px;width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:11px;background:var(--bg);text-align:left;margin-top:12px;font-size:14px}
+.toggle .box{width:20px;height:20px;border:1px solid var(--line);border-radius:6px;display:grid;place-items:center;flex:none;font-weight:700;font-size:13px;background:var(--card)}
+.toggle[aria-pressed="true"] .box{background:var(--btn-bg);color:var(--btn-ink);border-color:var(--btn-bg)}
+.toggle:disabled{opacity:.5;cursor:not-allowed}
+
+.btn{display:block;width:100%;padding:15px 18px;border:1px solid var(--btn-bg);border-radius:12px;background:var(--btn-bg);color:var(--btn-ink);font-size:16px;font-weight:700;font-family:"Manrope",sans-serif;box-shadow:var(--shadow)}
+.btn.alt{background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+.btns{display:grid;gap:10px}
+.btns.two{grid-template-columns:1fr 1fr}
+.sticky{position:sticky;bottom:0;padding:12px 0 4px;background:linear-gradient(transparent,var(--bg) 40%)}
+
+.top{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.top .link{padding:6px 0;flex:none}
+.bar{flex:1;height:8px;border-radius:5px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--hl);border-radius:5px;transition:width .25s}
+.pts{display:flex;gap:16px;font-size:13px;color:var(--muted);margin-bottom:12px}
+.pts b{color:var(--ink);font-weight:700}
+
+.q{padding:26px 20px 26px}
+.q .ask{font-size:13px;color:var(--hl);font-weight:700;letter-spacing:.04em;margin-bottom:8px}
+.q .term{font-family:"Fraunces",serif;font-weight:600;font-size:clamp(30px,6.5vw,40px);line-height:1.1;overflow-wrap:anywhere}
+
+.opts{display:grid;gap:9px;margin-bottom:16px}
+.opt{display:flex;align-items:center;gap:13px;width:100%;text-align:left;padding:13px;background:var(--card);border:1px solid var(--line);border-radius:12px;font-size:16.5px;line-height:1.3;min-height:54px;box-shadow:var(--shadow)}
+.opt .k{flex:none;width:27px;height:27px;border-radius:8px;border:1px solid var(--line);display:grid;place-items:center;font-family:"Manrope",sans-serif;font-weight:700;font-size:13.5px;color:var(--muted);background:var(--bg)}
+.opt.ok{border-color:var(--ok);background:var(--ok-bg)}
+.opt.ok .k{background:var(--ok);border-color:var(--ok);color:#fff}
+.opt.bad{border-color:var(--bad);background:var(--bad-bg)}
+.opt.bad .k{background:var(--bad);border-color:var(--bad);color:#fff}
+.opt.dim{opacity:.5}
+.opt:disabled{cursor:default}
+
+.write-box{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
+.write-box input{width:100%;padding:13px 14px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font-size:17px;font-family:"Manrope",sans-serif}
+.write-box.ok input{border-color:var(--ok);background:var(--ok-bg)}
+.write-box.bad input{border-color:var(--bad);background:var(--bad-bg)}
+.write-box input:disabled{color:var(--ink);-webkit-text-fill-color:var(--ink);opacity:1}
+.write-row{display:flex;gap:10px;margin-top:10px}
+.write-row .btn{flex:2}
+.write-row .link{flex:1;text-align:center;border:1px solid var(--line);border-radius:12px;text-decoration:none}
+
+.fb{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px;background:var(--card);box-shadow:var(--shadow);border-left-width:5px}
+.fb.ok{border-left-color:var(--ok)}
+.fb.bad{border-left-color:var(--bad)}
+.fb .h{font-family:"Manrope",sans-serif;font-weight:800;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}
+.fb.ok .h{color:var(--ok)}
+.fb.bad .h{color:var(--bad)}
+.fb .pair{font-family:"Fraunces",serif;font-size:20px;font-weight:600}
+.fb .note{margin:9px 0 0;font-size:14px;color:var(--muted);line-height:1.55}
+.ico{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:3px 9px;margin-left:6px;font-size:14px;vertical-align:middle}
+
+.fc{width:100%;min-height:230px;display:flex;flex-direction:column;justify-content:center;text-align:center;padding:28px 22px;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);margin-bottom:16px}
+.fc .small{font-size:13px;color:var(--hl);font-weight:700;letter-spacing:.05em;margin-bottom:10px}
+.fc .big{font-family:"Fraunces",serif;font-weight:600;font-size:clamp(28px,6vw,38px);line-height:1.12;overflow-wrap:anywhere}
+.fc .hint{margin-top:18px;font-size:13px;color:var(--muted)}
+.fc.back{border-color:var(--hl);box-shadow:var(--shadow), inset 0 0 0 1px var(--hl)}
+
+.score{text-align:center;padding:30px 16px}
+.score .n{font-family:"Fraunces",serif;font-weight:600;font-size:76px;line-height:.9}
+.score .n small{font-size:30px;color:var(--muted)}
+.score p{margin:10px 0 0;font-size:17px}
+.miss{list-style:none;margin:0;padding:0}
+.miss li{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}
+.miss li:last-child{border-bottom:0}
+.miss b{font-weight:600;font-family:"Fraunces",serif;font-size:16px}
+.miss span{color:var(--muted);text-align:right}
+.empty{color:var(--muted);margin:0}
+
+/* ---------- mise en page bureau ---------- */
+@media (min-width:860px){
+  #app{max-width:960px;padding:48px 32px 70px}
+  .hero{padding:4px 0 26px}
+  .hero h1{font-size:clamp(44px,4.6vw,58px)}
+  .home-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;align-items:start}
+  .stats{margin-bottom:18px}
+  .opts{grid-template-columns:1fr 1fr}
+  .q{padding:34px 8px 30px}
+  .sticky{max-width:420px}
+  .sticky .btn{box-shadow:var(--shadow)}
+  .btns{max-width:420px}
+  .fc{min-height:280px}
+  .quiz-grid{display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start}
+  .quiz-grid .side{position:sticky;top:32px}
+}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ---------- Données : "anglais|français|note optionnelle" ---------- */
+const RAW = {
+people:{name:"People, jobs and responsibilities",items:`
+Accountant|Comptable
+Architect|Architecte
+Aircraft designer|Concepteur d'avions
+Aircraft manufacturer|Constructeur aéronautique, avionneur
+Airframe maker|Fabricant de cellules
+Aircraft maintenance engineer|Technicien de maintenance aéronautique
+Builder|Constructeur
+Carpenter|Charpentier
+Cabin crew|Personnel navigant commercial
+Contractor|Entrepreneur, contractant
+Craftsman|Artisan
+Craftsmanship|Artisanat
+Chairman|Président
+Engineer|Ingénieur
+Exhibitor|Exposant
+Flight engineer|Mécanicien navigant
+Ground crew|Personnel au sol
+Homebuilder|Constructeur amateur
+Mason / Bricklayer|Maçon
+Owner|Propriétaire
+Passenger|Passager
+Provider|Fournisseur d'accès (internet)|Différent de supplier, qui vend des marchandises à d'autres entreprises.
+Purser|Commissaire de bord
+Site foreman / Site manager|Chef de chantier
+Spotter|Observateur|Plane spotter = passionné d'aviation.
+Subcontractor|Sous-traitant
+Supplier|Fournisseur
+Welder|Soudeur
+Shareholder|Actionnaire
+`},
+company:{name:"Companies and management",items:`
+Accountability|Responsabilité
+Ledger|Livre de compte
+Agreement|Accord, contrat
+Assessment|Évaluation, test
+Back office|Service financier (back-office)
+Bargain|Bonne affaire
+Board of directors|Conseil d'administration
+Compliance|Conformité
+Compliant|Conforme
+Customer airline|Compagnie cliente
+Intelligence|Renseignement|Attention, faux ami : ce n'est pas seulement « intelligence ». CIA = Central Intelligence Agency.
+Freeware|Logiciel gratuit
+Leadership|Direction, leadership
+Lean management|Gestion allégée|Éliminer le gaspillage pour un rendement maximal. Vient de chez Toyota.
+Knowledgeware|Connaissance gérée dans un modèle virtuel
+Know-how|Savoir-faire, compétence
+Management|Gestion
+Milestone|Jalon, étape
+Partnership|Partenariat
+Rules and regulations|Règlement intérieur
+Stakeholder|Partie prenante
+Supply chain|Chaîne d'approvisionnement
+Workflow|Flux de travaux, flux opérationnels
+Workforce|Effectif, main-d'œuvre
+Workload|Charge de travail, plan de charge
+Yield management|Gestion de la recette unitaire
+Asset management|Gestion d'un parc d'appareils ou d'installations
+Input|Entrée, donnée entrante, contribution
+`},
+aviation:{name:"Aircraft and aviation",items:`
+Aeronautics|Aéronautique
+Avionics|Avionique
+Airplane / Aeroplane|Avion|Aeroplane = britannique, airplane = américain, plane en abrégé.
+Aircraft|Aéronef
+Airport|Aéroport
+Airfield|Aérodrome
+Military airfield|Aérodrome militaire
+Air carrier|Transporteur aérien
+Air Force|Force aérienne
+Airline|Compagnie aérienne
+Executive aircraft|Avion d'affaires
+Commercial airplane|Avion commercial
+Passenger jet|Avion de ligne
+Commuter aircraft|Avion régional
+Fighter-interceptor|Chasseur-intercepteur
+Flag-carrier|Compagnie nationale
+Glider|Planeur
+Grounding|Immobilisation d'un avion|Aussi : mise à pied d'un navigant, ou arrêt de vol d'une compagnie en faillite.
+Gust of air|Bourrasque, rafale
+Down-gust|Bourrasque rabattante
+Up-gust|Rafale dirigée vers le haut
+Homebuilt aircraft|Avion construit par un amateur
+Operating system|Système d'exploitation
+Long-haul airliner|Avion long-courrier
+Reachback|Contrôle de drones depuis la métropole|Aussi appelé Remote Split Operations (RSO).
+Rover|Véhicule d'exploration spatiale
+Shuttle|Navette
+Thrust|Poussée
+Recreational aircraft|Aéronef de loisir
+`},
+maintenance:{name:"Maintenance and repair",items:`
+Aircraft maintenance manual (AMM)|Manuel de maintenance de l'avion
+Structural Repair Manual (SRM)|Manuel de réparation des structures
+Engine tests|Essais réacteurs
+Maintenance|Entretien
+Heavy maintenance|Grand entretien|Contraire : light maintenance, petit entretien.
+Field maintenance|Entretien sur piste
+Guideline|Directive, marche à suivre
+Base maintenance|Maintenance en base
+Downtime|Temps d'arrêt (machine inutilisable)
+Off-wing maintenance|Maintenance des moteurs déposés|Contraire : on-wing maintenance.
+Line maintenance|Maintenance d'escale
+Structural maintenance|Entretien des structures
+Maintenance base|Atelier de maintenance
+Maintenance apron|Aire d'entretien et de réparation
+Maintenance bay|Aire de maintenance
+Post-maintenance test flight|Vol d'essai après maintenance
+MLU (Mid-Life Update)|Modernisation à mi-vie
+to refabricate|Refaire, refabriquer une pièce
+to restore|Restaurer une pièce
+Refurbishing|Rénovation, remise en état
+Shed|Hangar, atelier
+Shelter|Abri couvert
+Storage space|Espace de stockage
+Tolerance|Plage de variation autorisée
+Workshop|Atelier
+`},
+construction:{name:"Construction and civil engineering",items:`
+Accommodation|Logement
+Civil engineering|Génie civil
+Engineering|Ingénierie
+Facilities|Locaux
+Bridge|Pont
+Building site|Chantier
+Cellar|Cave
+Ceiling|Plafond
+Central heating|Chauffage central
+Dam|Barrage
+Drainage|Drainage, assainissement
+Earthworks|Terrassement
+to excavate|Excaver, creuser
+to erect|Ériger, monter (une structure)
+Fence|Cloison, barrière
+Floor|Sol (à l'intérieur)
+Formwork|Coffrage
+Gate|Porte, portail
+Ground|Sol (à l'extérieur), terrain
+Handover|Livraison, remise de l'ouvrage
+Kerb / Curb|Bordure de trottoir
+Lane|Voie de circulation
+to level|Niveler, mettre à niveau
+to lease|Louer, donner en location
+Pavement|Chaussée (US), trottoir (UK)
+Pillar|Pilier
+Pothole|Nid-de-poule
+Rafter|Chevron
+Railings|Garde-corps
+Retaining wall|Mur de soutènement
+to reinforce|Armer, renforcer
+Scaffold|Échafaud
+Scaffolding|Échafaudage
+Sewer|Égout, collecteur
+Sewage network|Réseau d'égouts
+Soil|Sol (géotechnique)
+Suspension bridge|Pont suspendu
+to survey|Faire un relevé topographique
+Scope of work|Périmètre des travaux
+Tender / Bid|Appel d'offres, soumission
+Trench|Tranchée
+Water table|Nappe phréatique
+Waterproofing|Étanchéité, imperméabilisation
+Water treatment plant|Station d'épuration
+`},
+materials:{name:"Building materials",items:`
+Materials|Matériaux
+Aggregate|Granulat
+Asphalt|Asphalte, enrobé
+Cement|Ciment
+Clay|Argile
+Concrete|Béton
+Slab|Dalle
+to compact|Compacter
+to cure|Faire durcir (le béton)
+to pour concrete|Couler du béton
+Beam|Poutre
+Girder|Poutre maîtresse, longeron
+Timber|Bois de construction
+Cast iron|Fonte
+Chipboard|Aggloméré
+Copper|Cuivre
+Gravel|Gravier
+Kerosene|Kérosène|Abréviation : kero.
+Lubricant|Lubrifiant
+Mild steel|Acier doux
+Mortar|Mortier
+Plywood|Contreplaqué
+Sand|Sable
+Seamless|Sans couture, sans joint
+Steel|Acier
+`},
+electrical:{name:"Electrical engineering",items:`
+Chip|Puce, microprocesseur
+Earthing socket|Prise de terre
+Electric socket|Prise électrique
+Electric trip switch|Interrupteur électrique|Dans la pratique, un trip switch est un disjoncteur.
+Embedded|Encastré, intégré
+Encoding|Codage, encodage
+Fly-by-wire (FBW)|Commandes de vol électriques
+Flight controls|Commandes de vol
+Hardware|Matériel informatique, quincaillerie
+Software|Logiciel
+Insulation|Isolation
+Isolation|Isolement
+Microswitch|Micro-contact
+Power supply|Alimentation électrique
+Socket|Prise femelle
+Wire|Câble
+to wire up|Raccorder un réseau électrique
+`},
+parts:{name:"Aircraft parts and main components",items:`
+Air vent|Prise d'air
+Airframe|Cellule
+Air-speed indicator|Indicateur de vitesse
+Cabin|Cabine
+Combustion chamber|Chambre de combustion
+Crew cabin|Poste d'équipage
+Elevator|Gouverne de profondeur
+Engine|Moteur
+Jet engine|Moteur à réaction
+Piston engine|Moteur à pistons
+Engine jetstream|Souffle du réacteur
+Flight data recorder (FDR)|Enregistreur de paramètres de vol, boîte noire|Synonyme : the black box.
+Flight data|Paramètres de vol
+Fuel lines|Conduites de carburant
+Fuel supply|Réserve de carburant
+Gauge|Jauge
+Leading edge|Bord d'attaque
+Leading-edge slat|Bec de bord d'attaque
+Flaps|Volets
+Rudder|Gouvernail de direction
+Span|Envergure (d'un avion)
+Spoilers|Aérofreins, déporteurs|Le glossaire écrit « ailerons », mais spoilers = aérofreins (ailerons = ailerons).
+Wings|Ailes
+Port-hole|Hublot
+`},
+tools:{name:"Tools",items:`
+Altimeter|Altimètre
+Chisel|Burin, ciseau
+Chainsaw|Tronçonneuse
+Chuck|Mandrin
+Clamp|Bride de serrage
+Drill|Perceuse
+Grinder|Meuleuse
+Hammer|Marteau
+Jigsaw|Scie sauteuse
+Kit|Trousse d'outillage, kit
+Ladder|Échelle|Ne pas confondre avec scale (échelle d'une carte, ou de mesure).
+Nail|Clou
+Screw|Vis|Le glossaire écrit « écrou », mais c'est bien vis. Écrou = nut.
+Nut|Écrou
+Patch|Pièce, rustine
+Pliers|Pince
+Screwdriver|Tournevis
+Shovel|Pelle
+Soldering iron|Fer à souder
+Spirit level|Niveau à bulle
+Tape measure|Mètre ruban
+Torch|Chalumeau|Le glossaire donne chalumeau ; en anglais britannique, torch = aussi lampe torche.
+Wrench|Clé, clé à molette
+`},
+mech:{name:"Mechanical components",items:`
+Bearing|Palier, roulement
+Belt|Courroie
+V-belt|Courroie trapézoïdale
+Belt drive|Entraînement par courroie
+Blade|Lame, pale
+Bolt|Boulon
+Bore|Cylindre (alésage)
+Clutch|Embrayage
+Crank|Manivelle
+Crankshaft|Vilebrequin
+Creep|Fluage|Déformation plastique lente d'un métal sous contrainte, surtout à haute température.
+Harness|Harnais
+Powerplant|Groupe moteur, groupe propulseur
+Pulley|Poulie
+Yield stress|Limite d'élasticité
+`},
+flight:{name:"Flight operations and manoeuvre",items:`
+A-check|Inspection de type A
+B-check|Inspection de type B
+C-check|Inspection de type C (petite visite)
+D-check|Inspection de type D (grande visite)
+Back testing|Contrôle a posteriori
+Balked landing|Atterrissage raté
+Belly landing|Atterrissage sur le ventre
+Blow-out|Extinction de réacteur, panne moteur
+Bumpy ride|Vol soumis à des trous d'air
+Cabin depressurization|Dépressurisation de la cabine
+Cockpit misting|Embuage de l'habitacle
+Collision avoidance|Esquive des collisions
+to depressurize|Dépressuriser, se dépressuriser|BrE : depressurise, AmE : depressurize.
+Ditching|Amerrissage forcé
+to ditch|Amerrir en urgence
+Endurance|Autonomie|C'est un temps. Range = distance franchissable.
+Entry into service|Mise en service
+Flight|Vol
+Training flight|Vol d'entraînement
+Autoflight|Vol automatique
+Flight testing|Essais en vol
+Flightworthy|Bon de vol
+Forced landing|Atterrissage forcé
+Gliding flight|Vol plané
+to glide|Planer
+Handling qualities|Qualités de vol
+Hypersonic speed|Vitesse hypersonique (au-dessus de Mach 5)
+In-flight|En vol, à bord
+In-flight service|Service à bord
+Fuel dumping|Vidange de carburant en vol
+Fuel jettison|Vide-vite
+Line-stop|Escale
+to make a stopover|Faire escale
+Maiden flight|Premier vol
+Rate of climb|Vitesse ascensionnelle
+Rate of descent|Vitesse de descente
+Runway|Piste
+Runway departure|Sortie de piste
+Take-off|Décollage
+Tankage|Capacité d'emport en carburant
+Torching|Flammes en sortie de réacteur
+Windshear|Cisaillement de vent
+`},
+manuf:{name:"Manufacturing and production",items:`
+Assembly line|Chaîne d'assemblage
+Assembly hangar|Hangar de montage
+Batch|Lot
+Centrifugal casting|Coulée centrifuge
+Cooling|Refroidissement
+Failure|Rupture d'une pièce (charge excessive ou fatigue)
+Fatigue|Affaiblissement d'un matériau sous cycles de contraintes répétés
+Finishing|Finitions
+Framing|Encadrement
+to weld|Souder
+Gas welding|Soudage au gaz
+Grinding|Meulage
+Kinetic energy|Énergie cinétique
+Manufacturing|Fabrication, industrialisation
+Milling|Fraisage|Le glossaire donne broyage, meulage, laminage ; en usinage, milling = fraisage.
+Packaging|Emballage, conditionnement
+Patchwork|Assemblage disparate
+Redundancy|Redondance (duplication de composants critiques)
+`},
+machines:{name:"Machines and equipment",items:`
+Bearing capacity|Capacité portante
+Beacon|Balise (radioélectrique)
+Blower|Ventilateur, soufflante
+Concrete mixer|Bétonnière
+Control panel|Tableau de bord
+Cooling system|Système de refroidissement
+Crane|Grue
+Damper|Amortisseur, étouffoir
+Desktop|Ordinateur de bureau
+Device|Dispositif, appareil
+Display|Affichage|Head-up Display (HUD) = affichage tête haute.
+Dumper|Camion-benne
+Excavator|Pelle mécanique
+Fan|Soufflante, réacteur
+Firewall|Cloison pare-feu, pare-feu informatique
+Gearbox|Boîte de transmission
+Main gearbox|Boîte de transmission principale
+Tail gearbox|Boîte de transmission du rotor anticouple
+GPS|Système mondial de localisation par satellite
+Impulse turbine|Turbine à impulsion
+Jackhammer|Marteau-piqueur
+Kaplan turbine|Turbine Kaplan
+Loader|Chargeuse
+Load|Charge (force appliquée à une structure)
+Nozzle|Embout, bec
+Starter|Démarreur
+`},
+measures:{name:"Measurements and physical properties",items:`
+Aesthetics|Esthétique
+Boiling point|Point d'ébullition
+Chance|Hasard
+Deep|Profond
+Depth|Profondeur
+Dilapidated|Délabré
+Efficient|Efficace, efficient
+Eligible|Admissible, acceptable
+Height|Hauteur
+Impulse|Impulsion
+Length|Longueur
+Noise level|Niveau sonore
+Peak power|Puissance de pointe
+Range|Distance franchissable|Ni rayon d'action (militaire), ni autonomie (un temps : endurance).
+Rate|Taux
+Rating|Évaluation, classement, indice
+Roughness|Rugosité
+Yield|Rendement, recette
+`},
+safety:{name:"Safety and protective equipment",items:`
+COSHH|Règlementation sur les substances dangereuses pour la santé|UK : Control of Substances Hazardous to Health.
+Hazard|Danger, risque
+Helmet|Casque
+No-go zone|Zone interdite
+Non-conformance|Produit non conforme
+PPE (Personal Protective Equipment)|EPI (Équipements de Protection Individuelle)
+Root cause analysis (RCA)|Analyse des causes racines
+Safety|Sécurité|Faux ami : security = sûreté.
+Safety board|Commission de sécurité
+Safety harness|Harnais de sécurité
+Standard operating procedure (SOP)|Procédure opérationnelle standardisée
+Strap|Sangle
+Single Risk Assessment Document (SRAD)|DUERP (Document Unique d'Évaluation des Risques Professionnels)
+Risk assessment|Évaluation systématique des risques
+`},
+docs:{name:"Documents, drawings and quality",items:`
+Acceptance|Réception (d'un matériel)
+Benchmark|Repère, indicateur de performance
+Bill of specifications / Spec|Cahier des charges
+Blueprint|Bleu, plan provisoire
+Booklet|Brochure
+Check-list|Liste de contrôle
+Draft|Ébauche, brouillon
+Quote / Estimate|Devis
+Form|Formulaire
+Layout|Mise en page, disposition
+Leaflet|Prospectus
+Log-book|Carnet de vol, livre de bord
+Logfile|Journal de compte rendu (fichier de panne)
+Login / Logout|Connexion, déconnexion
+Spreadsheet|Tableur
+Network|Réseau
+Office|Bureau
+Offsets|Compensations|Faux ami : « compensation » = indemnisation en français.
+Output|Résultat, sortie
+`},
+verbs:{name:"Useful verbs",items:`
+to afford|Assumer un coût, se permettre
+to clock in|Pointer
+to dive|Piquer, plonger
+to drop|Larguer, parachuter, déposer
+to dump jet fuel|Larguer du carburant
+to fly|Voler, faire voler
+to fly a plane|Piloter un avion
+to forward|Faire suivre, transmettre
+to force-land|Contraindre à atterrir
+to handle|Manipuler
+to jam|Brouiller une transmission radio
+to launch|Lancer
+to log|Enregistrer, entrer des données
+to nose-dive|Piquer du nez
+to track|Poursuivre (au radar)
+`}
+};
+
+const CATS = Object.keys(RAW).map(id => ({id, name: RAW[id].name}));
+const TERMS = [];
+(function(){
+  const seen = new Set();
+  for (const id of Object.keys(RAW)) {
+    for (const line of RAW[id].items.trim().split("\n")) {
+      const p = line.split("|").map(s => s.trim());
+      if (!p[0] || !p[1]) continue;
+      const k = p[0].toLowerCase();
+      if (seen.has(k)) continue;
+      seen.add(k);
+      TERMS.push({en:p[0], fr:p[1], note:p[2] || "", cat:id});
+    }
+  }
+})();
+const catName = id => (CATS.find(c => c.id === id) || {}).name || "";
+
+/* ---------- Stockage local (facultatif) ---------- */
+const KEY = "engglossary-quiz:v2";
+function freshStore(){ return {weak:{}, best:{}, answered:0, correct:0}; }
+function loadStore(){
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) return Object.assign(freshStore(), JSON.parse(raw));
+  } catch(e) {}
+  return freshStore();
+}
+let store = loadStore();
+function saveStore(){ try { localStorage.setItem(KEY, JSON.stringify(store)); } catch(e) {} }
+
+/* ---------- État ---------- */
+const S = {
+  view:"home", kind:"quiz", qmode:"mcq", dir:"en-fr", count:20, weakOnly:false,
+  cats:new Set(CATS.map(c => c.id)), quiz:null, flash:null
+};
+
+/* ---------- Utilitaires ---------- */
+const $app = document.getElementById("app");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function shuffle(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function pool(){ return TERMS.filter(t => S.cats.has(t.cat) && (!S.weakOnly || store.weak[t.en])); }
+function speak(txt){
+  try {
+    const s = window.speechSynthesis; if (!s) return;
+    s.cancel();
+    const clean = txt.split(" / ")[0].replace(/\(.*?\)/g, "").trim();
+    const u = new SpeechSynthesisUtterance(clean); u.lang = "en-GB"; u.rate = .9; s.speak(u);
+  } catch(e) {}
+}
+const speakBtn = en => (window.speechSynthesis ? `<button class="ico" data-a="speak" data-v="${esc(en)}" aria-label="Écouter la prononciation">🔊</button>` : "");
+const bestKey = () => S.kind + "-" + S.qmode + "-" + S.dir;
+function pickDir(){ return S.dir === "mix" ? (Math.random() < .5 ? "en-fr" : "fr-en") : S.dir; }
+
+/* normalisation pour la correction des réponses écrites */
+function normalize(s){
+  return String(s).toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/\(.*?\)/g, " ")
+    .replace(/^(to|a|an|the|un|une|le|la|les|l'|d')\s+/, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+function alternatives(text){
+  return [...new Set(text.split(/,|\/| ou /i).map(normalize).filter(Boolean))];
+}
+
+function makeMCQ(t){
+  const d = pickDir(), key = d === "en-fr" ? "fr" : "en";
+  const same = TERMS.filter(x => x.cat === t.cat && x.en !== t.en && x.fr !== t.fr);
+  const other = TERMS.filter(x => x.cat !== t.cat && x.fr !== t.fr);
+  const cand = shuffle(same).concat(shuffle(other));
+  const opts = [t[key]];
+  for (const c of cand) { if (opts.length >= 4) break; if (!opts.includes(c[key])) opts.push(c[key]); }
+  const o = shuffle(opts);
+  return {type:"mcq", t, d, opts:o, ans:o.indexOf(t[key])};
+}
+function makeWrite(t){
+  const d = pickDir(), key = d === "en-fr" ? "fr" : "en";
+  return {type:"write", t, d, prompt:(d === "en-fr" ? t.en : t.fr), accept:alternatives(t[key]), display:t[key]};
+}
+function makeTF(t){
+  const d = pickDir(), key = d === "en-fr" ? "fr" : "en";
+  const prompt = d === "en-fr" ? t.en : t.fr;
+  const isTrue = Math.random() < 0.5;
+  let shown = t[key];
+  if (!isTrue) {
+    const same = TERMS.filter(x => x.cat === t.cat && x[key] !== t[key]);
+    const other = TERMS.filter(x => x.cat !== t.cat && x[key] !== t[key]);
+    const cand = shuffle(same).concat(shuffle(other));
+    shown = (cand[0] || t)[key];
+  }
+  return {type:"tf", t, d, prompt, shown, isTrue};
+}
+function makeQ(t){
+  if (S.qmode === "write") return makeWrite(t);
+  if (S.qmode === "tf") return makeTF(t);
+  return makeMCQ(t);
+}
+
+/* ---------- Vues ---------- */
+function seg(action, cur, opts){
+  return `<div class="seg" role="group">${opts.map(([v,l]) => `<button class="segb" data-a="${action}" data-v="${v}" aria-pressed="${String(cur) === String(v)}">${l}</button>`).join("")}</div>`;
+}
+
+function homeView(){
+  const n = pool().length, weakN = Object.keys(store.weak).length;
+  const acc = store.answered ? Math.round(100 * store.correct / store.answered) : null;
+  const b = store.best[bestKey()];
+  const unit = S.kind === "quiz" ? "questions" : "cartes";
+  return `
+  <header class="hero">
+    <span class="tag"><i></i>${TERMS.length} entrées</span>
+    <h1>Quiz du glossaire d'ingénierie</h1>
+    <p>Engineering Glossary 2026-2027 — révision anglais technique.</p>
+  </header>
+  <div class="stats">
+    <div><b>${store.answered}</b><span>réponses</span></div>
+    <div><b>${acc === null ? "–" : acc + "%"}</b><span>réussite</span></div>
+    <div><b>${weakN}</b><span>à revoir</span></div>
+    <div><b>${b == null ? "–" : b + "%"}</b><span>record</span></div>
+  </div>
+  <div class="home-grid">
+  <section class="sheet"><div class="pad">
+    <div class="lbl">Activité</div>
+    ${seg("kind", S.kind, [["quiz","Quiz"],["flash","Flashcards"]])}
+    ${S.kind === "quiz" ? `
+    <div class="lbl">Format de réponse</div>
+    ${seg("qmode", S.qmode, [["mcq","QCM"],["write","À écrire"],["tf","Vrai / Faux"]])}` : ""}
+    <div class="lbl">Langue</div>
+    ${seg("dir", S.dir, [["en-fr","Anglais → français"],["fr-en","Français → anglais"],["mix","Les deux"]])}
+    <div class="lbl">Nombre de ${unit}</div>
+    ${seg("count", S.count, [[10,"10"],[20,"20"],[30,"30"],[0,"Tout"]])}
+  </div></section>
+  <section class="sheet"><div class="pad">
+    <div class="row"><h2 style="margin:0">Thèmes</h2>
+      <span><button class="link" data-a="catall">Tout</button> <button class="link" data-a="catnone">Aucun</button></span></div>
+    <div class="chips">${CATS.map(c => {
+      const k = TERMS.filter(t => t.cat === c.id).length;
+      return `<button class="chip" data-a="cat" data-v="${c.id}" aria-pressed="${S.cats.has(c.id)}">${esc(c.name)}<small>${k}</small></button>`;
+    }).join("")}</div>
+    <button class="toggle" data-a="weakonly" aria-pressed="${S.weakOnly}" ${weakN === 0 ? "disabled" : ""}>
+      <span class="box">${S.weakOnly ? "✓" : ""}</span>
+      <span>Seulement mes points faibles (${weakN})</span>
+    </button>
+    ${weakN ? `<div style="text-align:right;margin-top:6px"><button class="link" data-a="resetweak">Vider la liste à revoir</button></div>` : ""}
+  </div></section>
+  </div>
+  <div class="sticky">
+    <button class="btn" data-a="start" ${n === 0 ? "disabled" : ""}>${n === 0 ? "Choisis au moins un thème" : (S.kind === "quiz" ? "Lancer le quiz" : "Lancer les flashcards") + " (" + (S.count && S.count < n ? S.count : n) + " sur " + n + ")"}</button>
+  </div>`;
+}
+
+function quizHeader(q, n){
+  const done = q.answered !== null;
+  return `
+  <div class="top">
+    <button class="link" data-a="quit">Quitter</button>
+    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${q.i + (done ? 1 : 0)}"><i style="width:${100 * (q.i + (done ? 1 : 0)) / n}%"></i></div>
+  </div>
+  <div class="pts"><span>Score <b>${q.score}</b></span><span>Série <b>${q.streak}</b></span><span>Erreurs <b>${q.wrong.length}</b></span></div>`;
+}
+
+function mcqView(q, cur, n){
+  const done = q.answered !== null, ok = done && q.answered.correct, last = q.i === n - 1, t = cur.t;
+  const prompt = cur.d === "en-fr" ? t.en : t.fr;
+  return `
+  <section class="sheet">
+    <div class="tb"><span>${esc(catName(t.cat))}</span><b>${q.i + 1} / ${n}</b></div>
+    <div class="q">
+      <div class="ask">${cur.d === "en-fr" ? "Que veut dire…" : "Comment dit-on en anglais…"}</div>
+      <div class="term">${esc(prompt)}</div>
+    </div>
+  </section>
+  <div class="opts">${cur.opts.map((o, i) => {
+    let cls = "opt";
+    if (done) cls += i === cur.ans ? " ok" : (i === q.answered.chosen ? " bad" : " dim");
+    return `<button class="${cls}" data-a="choose" data-v="${i}" ${done ? "disabled" : ""}><span class="k">${"ABCD"[i]}</span><span>${esc(o)}</span></button>`;
+  }).join("")}</div>
+  ${done ? feedbackBlock(t, ok, last) : ""}`;
+}
+
+function writeView(q, cur, n){
+  const done = q.answered !== null, ok = done && q.answered.correct, last = q.i === n - 1, t = cur.t;
+  const boxCls = "write-box" + (done ? (ok ? " ok" : " bad") : "");
+  const val = done ? esc(q.answered.chosen) : "";
+  return `
+  <section class="sheet">
+    <div class="tb"><span>${esc(catName(t.cat))}</span><b>${q.i + 1} / ${n}</b></div>
+    <div class="q">
+      <div class="ask">${cur.d === "en-fr" ? "Traduis en français…" : "Traduis en anglais…"}</div>
+      <div class="term">${esc(cur.prompt)}</div>
+    </div>
+  </section>
+  <div class="${boxCls}">
+    <input id="writeInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
+      placeholder="Écris ta réponse…" value="${val}" ${done ? "disabled" : ""}>
+    ${done ? "" : `
+    <div class="write-row">
+      <button class="btn" data-a="submitwrite">Valider</button>
+      <button class="link" data-a="skipwrite">Je ne sais pas</button>
+    </div>`}
+  </div>
+  ${done ? feedbackBlock(t, ok, last) : ""}`;
+}
+
+function tfView(q, cur, n){
+  const done = q.answered !== null, ok = done && q.answered.correct, last = q.i === n - 1, t = cur.t;
+  const said = done ? q.answered.chosen : null;
+  return `
+  <section class="sheet">
+    <div class="tb"><span>${esc(catName(t.cat))}</span><b>${q.i + 1} / ${n}</b></div>
+    <div class="q">
+      <div class="ask">${cur.d === "en-fr" ? "Cette traduction est-elle correcte ?" : "Cette traduction est-elle correcte ?"}</div>
+      <div class="term" style="font-size:clamp(20px,4vw,24px);margin-bottom:6px">${esc(cur.prompt)}</div>
+      <div class="term">${esc(cur.shown)}</div>
+    </div>
+  </section>
+  <div class="btns two" style="margin-bottom:16px">
+    <button class="opt ${done ? (cur.isTrue ? "ok" : (said === 0 ? "bad" : "dim")) : ""}" data-a="choose" data-v="0" ${done ? "disabled" : ""} style="justify-content:center">Vrai</button>
+    <button class="opt ${done ? (!cur.isTrue ? "ok" : (said === 1 ? "bad" : "dim")) : ""}" data-a="choose" data-v="1" ${done ? "disabled" : ""} style="justify-content:center">Faux</button>
+  </div>
+  ${done ? feedbackBlock(t, ok, last) : ""}`;
+}
+
+function feedbackBlock(t, ok, last){
+  return `
+  <div class="fb ${ok ? "ok" : "bad"}">
+    <div class="h">${ok ? "Bonne réponse" : "Raté"}</div>
+    <div class="pair"><b>${esc(t.en)}</b> = ${esc(t.fr)} ${speakBtn(t.en)}</div>
+    ${t.note ? `<p class="note">${esc(t.note)}</p>` : ""}
+  </div>
+  <button class="btn" data-a="next">${last ? "Voir mon score" : "Question suivante"}</button>`;
+}
+
+function quizView(){
+  const q = S.quiz, n = q.qs.length, cur = q.qs[q.i];
+  const body = cur.type === "write" ? writeView(q, cur, n) : cur.type === "tf" ? tfView(q, cur, n) : mcqView(q, cur, n);
+  return quizHeader(q, n) + body;
+}
+
+function resultView(){
+  const q = S.quiz, n = q.qs.length, pct = Math.round(100 * q.score / n);
+  const msg = pct >= 90 ? "Autorisé au décollage." : pct >= 70 ? "Bon vol, encore quelques réglages." : pct >= 50 ? "Un peu de turbulences, ça se rattrape." : "Retour au hangar pour une révision.";
+  return `
+  <header class="hero"><span class="tag"><i></i>Fiche de résultat</span><h1>Résultat</h1></header>
+  <section class="sheet"><div class="score">
+    <div class="n">${q.score}<small> / ${n}</small></div>
+    <p><b>${pct}%</b> · ${msg}</p>
+    <p style="font-size:15px;color:var(--muted)">Meilleure série : ${q.maxStreak}</p>
+  </div></section>
+  <section class="sheet"><div class="pad">
+    <h2>${q.wrong.length ? "À revoir (" + q.wrong.length + ")" : "Sans faute"}</h2>
+    ${q.wrong.length ? `<ul class="miss">${q.wrong.map(t => `<li><b>${esc(t.en)}</b><span>${esc(t.fr)}</span></li>`).join("")}</ul>` : `<p class="empty">Aucune erreur sur cette série.</p>`}
+  </div></section>
+  <div class="btns">
+    ${q.wrong.length ? `<button class="btn" data-a="retrywrong">Refaire mes erreurs</button>` : ""}
+    <button class="btn ${q.wrong.length ? "alt" : ""}" data-a="again">Nouvelle série</button>
+    <button class="btn alt" data-a="home">Accueil</button>
+  </div>`;
+}
+
+function flashView(){
+  const f = S.flash, n = f.cards.length;
+  if (f.i >= n) {
+    return `
+    <header class="hero"><span class="tag"><i></i>Fiche de résultat</span><h1>Paquet terminé</h1></header>
+    <section class="sheet"><div class="score">
+      <div class="n">${f.known}<small> / ${n}</small></div>
+      <p>cartes sues du premier coup</p>
+    </div></section>
+    ${f.review.length ? `<section class="sheet"><div class="pad"><h2>À revoir (${f.review.length})</h2>
+      <ul class="miss">${f.review.map(t => `<li><b>${esc(t.en)}</b><span>${esc(t.fr)}</span></li>`).join("")}</ul></div></section>` : ""}
+    <div class="btns">
+      ${f.review.length ? `<button class="btn" data-a="retryflash">Refaire les cartes à revoir</button>` : ""}
+      <button class="btn ${f.review.length ? "alt" : ""}" data-a="again">Nouveau paquet</button>
+      <button class="btn alt" data-a="home">Accueil</button>
+    </div>`;
+  }
+  const c = f.cards[f.i], t = c.t;
+  const front = c.d === "en-fr" ? t.en : t.fr, back = c.d === "en-fr" ? t.fr : t.en;
+  return `
+  <div class="top">
+    <button class="link" data-a="quit">Quitter</button>
+    <div class="bar"><i style="width:${100 * f.i / n}%"></i></div>
+  </div>
+  <div class="pts"><span>Carte <b>${f.i + 1} / ${n}</b></span><span>Sues <b>${f.known}</b></span><span>À revoir <b>${f.review.length}</b></span></div>
+  <button class="fc ${f.flipped ? "back" : ""}" data-a="flip" aria-label="Retourner la carte">
+    ${f.flipped ? `
+      <div class="small">${esc(front)}</div>
+      <div class="big">${esc(back)}</div>
+      ${t.note ? `<div class="hint">${esc(t.note)}</div>` : ""}`
+    : `
+      <div class="small">${esc(catName(t.cat))}</div>
+      <div class="big">${esc(front)}</div>
+      <div class="hint">Touche pour voir la réponse</div>`}
+  </button>
+  ${f.flipped ? `
+    <div style="text-align:center;margin-bottom:12px">${speakBtn(t.en)}</div>
+    <div class="btns two">
+      <button class="btn alt" data-a="review">À revoir</button>
+      <button class="btn" data-a="know">Je sais</button>
+    </div>` : ""}`;
+}
+
+function render(top){
+  $app.innerHTML = S.view === "home" ? homeView() : S.view === "quiz" ? quizView() : S.view === "result" ? resultView() : flashView();
+  if (top) window.scrollTo(0, 0);
+  if (S.view === "quiz") {
+    const cur = S.quiz.qs[S.quiz.i];
+    if (cur.type === "write" && S.quiz.answered === null) {
+      const inp = document.getElementById("writeInput");
+      if (inp) inp.focus();
+    }
+  }
+}
+
+/* ---------- Logique ---------- */
+function startWith(list){
+  if (!list.length) return;
+  if (S.kind === "quiz") {
+    S.quiz = {qs:list.map(makeQ), i:0, score:0, streak:0, maxStreak:0, answered:null, wrong:[]};
+    S.view = "quiz";
+  } else {
+    S.flash = {cards:list.map(t => ({t, d:pickDir()})), i:0, flipped:false, known:0, review:[], missed:new Set()};
+    S.view = "flash";
+  }
+  render(true);
+}
+function start(){
+  let list = shuffle(pool());
+  if (S.count && S.count < list.length) list = list.slice(0, S.count);
+  startWith(list);
+}
+function recordAnswer(correct, chosen){
+  const q = S.quiz, cur = q.qs[q.i];
+  q.answered = {correct, chosen};
+  store.answered++;
+  if (correct) {
+    q.score++; q.streak++; q.maxStreak = Math.max(q.maxStreak, q.streak); store.correct++;
+    delete store.weak[cur.t.en];
+  } else {
+    q.streak = 0; q.wrong.push(cur.t); store.weak[cur.t.en] = 1;
+  }
+  saveStore(); render();
+}
+function choose(i){
+  const q = S.quiz; if (!q || q.answered !== null) return;
+  const cur = q.qs[q.i];
+  if (cur.type === "mcq") recordAnswer(i === cur.ans, i);
+  else if (cur.type === "tf") recordAnswer((i === 0) === cur.isTrue, i);
+}
+function submitWrite(){
+  const q = S.quiz; if (!q || q.answered !== null) return;
+  const cur = q.qs[q.i];
+  const inp = document.getElementById("writeInput");
+  const raw = inp ? inp.value : "";
+  const norm = normalize(raw);
+  const correct = norm.length > 0 && cur.accept.includes(norm);
+  recordAnswer(correct, raw);
+}
+function skipWrite(){
+  const q = S.quiz; if (!q || q.answered !== null) return;
+  recordAnswer(false, "");
+}
+function next(){
+  const q = S.quiz; if (q.answered === null) return;
+  if (q.i >= q.qs.length - 1) {
+    const pct = Math.round(100 * q.score / q.qs.length);
+    if (q.qs.length >= 5 && (store.best[bestKey()] == null || pct > store.best[bestKey()])) store.best[bestKey()] = pct;
+    saveStore(); S.view = "result"; render(true);
+  } else { q.i++; q.answered = null; render(true); }
+}
+function flashAdvance(known){
+  const f = S.flash, t = f.cards[f.i].t;
+  if (known) { if (!f.missed.has(t.en)) f.known++; delete store.weak[t.en]; }
+  else { f.missed.add(t.en); f.review.push(t); store.weak[t.en] = 1; }
+  f.i++; f.flipped = false; saveStore(); render(true);
+}
+
+function act(a, v){
+  switch(a){
+    case "kind": S.kind = v; render(); break;
+    case "qmode": S.qmode = v; render(); break;
+    case "dir": S.dir = v; render(); break;
+    case "count": S.count = +v; render(); break;
+    case "cat": S.cats.has(v) ? S.cats.delete(v) : S.cats.add(v); render(); break;
+    case "catall": S.cats = new Set(CATS.map(c => c.id)); render(); break;
+    case "catnone": S.cats = new Set(); render(); break;
+    case "weakonly": S.weakOnly = !S.weakOnly; render(); break;
+    case "resetweak": store.weak = {}; S.weakOnly = false; saveStore(); render(); break;
+    case "start": start(); break;
+    case "choose": choose(+v); break;
+    case "submitwrite": submitWrite(); break;
+    case "skipwrite": skipWrite(); break;
+    case "next": next(); break;
+    case "quit": S.view = "home"; render(true); break;
+    case "home": S.view = "home"; render(true); break;
+    case "again": S.view = "home"; render(true); break;
+    case "retrywrong": S.kind = "quiz"; startWith(shuffle(S.quiz.wrong)); break;
+    case "retryflash": startWith(shuffle(S.flash.review)); break;
+    case "flip": S.flash.flipped = !S.flash.flipped; render(); break;
+    case "know": flashAdvance(true); break;
+    case "review": flashAdvance(false); break;
+    case "speak": speak(v); break;
+  }
+}
+$app.addEventListener("click", e => {
+  const el = e.target.closest("[data-a]"); if (!el || el.disabled) return;
+  act(el.dataset.a, el.dataset.v);
+});
+document.addEventListener("keydown", e => {
+  const typing = (e.target.tagName || "").toLowerCase() === "input";
+  if (S.view === "quiz") {
+    const cur = S.quiz.qs[S.quiz.i], done = S.quiz.answered !== null;
+    if (cur.type === "write") {
+      if (e.key === "Enter") { e.preventDefault(); done ? next() : submitWrite(); }
+      return;
+    }
+    if (typing) return;
+    if (!done && cur.type === "mcq" && ["1","2","3","4","a","b","c","d"].includes(e.key.toLowerCase())) {
+      const i = "1234".includes(e.key) ? +e.key - 1 : "abcd".indexOf(e.key.toLowerCase());
+      if (i < cur.opts.length) choose(i);
+    } else if (!done && cur.type === "tf" && ["1","2","v","f"].includes(e.key.toLowerCase())) {
+      choose("vf1".includes(e.key.toLowerCase()) && e.key.toLowerCase() !== "f" ? 0 : (e.key.toLowerCase() === "f" || e.key === "2" ? 1 : 0));
+    } else if (done && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); next(); }
+  } else if (S.view === "flash" && S.flash.i < S.flash.cards.length) {
+    if (e.key === " " || e.key === "Enter") { e.preventDefault(); act("flip"); }
+    else if (S.flash.flipped && e.key === "ArrowRight") flashAdvance(true);
+    else if (S.flash.flipped && e.key === "ArrowLeft") flashAdvance(false);
+  }
+});
+render();
+</script>
+</body>
+</html>
