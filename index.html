@@ -92,10 +92,6 @@ h1,h2,.disp{font-family:"Fraunces",Georgia,serif;font-weight:600;letter-spacing:
 .notice .pin{flex:none;font-size:17px;line-height:1.3}
 .notice b{color:var(--hl)}
 .notice .date{display:block;margin-top:4px;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-.mic{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px;border-radius:14px;border:1px solid var(--hl);background:var(--soft);font-size:17px;font-weight:700;margin-bottom:10px}
-.mic.on{background:var(--btn-bg);color:var(--btn-ink);animation:pulse 1.2s infinite}
-@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(180,132,44,.25)}}
-.mic-msg{font-size:13.5px;color:var(--muted);margin:0 0 10px;text-align:center;min-height:1.4em}
 .notice .cta{display:block;margin-top:8px;font-size:13px;font-weight:700;color:var(--hl)}
 
 .btn{display:block;width:100%;padding:15px 18px;border:1px solid var(--btn-bg);border-radius:12px;background:var(--btn-bg);color:var(--btn-ink);font-size:16px;font-weight:700;font-family:"Manrope",sans-serif;box-shadow:var(--shadow)}
@@ -677,7 +673,7 @@ function saveStore(){ try { localStorage.setItem(KEY, JSON.stringify(store)); } 
 const S = {
   view:"home", kind:"quiz", qmode:"mcq", dir:"en-fr", count:20, weakOnly:false,
   cats:new Set(CATS.map(c => c.id)), quiz:null, flash:null,
-  presetRanges:{} /* {catId: {from, to}} — plages actives (manuelles ou issues de REVIEW_PRESET), 1-indexé */
+  oral:false, presetRanges:{} /* {catId: {from, to}} — plages actives (manuelles ou issues de REVIEW_PRESET), 1-indexé */
 };
 
 /* ---------- Utilitaires ---------- */
@@ -709,52 +705,13 @@ function inRange(t){
 }
 function pool(){ return TERMS.filter(t => S.cats.has(t.cat) && inRange(t) && (!S.weakOnly || store.weak[t.en])); }
 applyReviewPreset();
-function speak(txt, lang, onend){
+function speak(txt, lang){
   try {
-    const s = window.speechSynthesis; if (!s) { if (onend) onend(); return; }
+    const s = window.speechSynthesis; if (!s) return;
     s.cancel();
     const clean = txt.split(" / ")[0].replace(/\(.*?\)/g, "").trim();
-    const u = new SpeechSynthesisUtterance(clean); u.lang = lang || "en-GB"; u.rate = .9;
-    if (onend) { u.onend = onend; u.onerror = onend; }
-    s.speak(u);
-  } catch(e) { if (onend) onend(); }
-}
-/* ---------- Mode oral : synthèse vocale + reconnaissance vocale ---------- */
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-let rec = null;
-function stopListen(){ try { if (rec) { rec.onresult = rec.onerror = rec.onend = null; rec.abort(); } } catch(e) {} rec = null; S.listening = false; }
-function oralCur(){ const q = S.quiz; if (S.view !== "quiz" || !q || q.answered !== null) return null; const c = q.qs[q.i]; return c.oral ? c : null; }
-function listen(){
-  const cur = oralCur(); if (!cur || !SR) return;
-  stopListen();
-  try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch(e) {}
-  const q = S.quiz, idx = q.i;
-  rec = new SR(); rec.lang = cur.d === "en-fr" ? "fr-FR" : "en-GB"; rec.maxAlternatives = 5; rec.interimResults = false; rec.continuous = false;
-  rec.onresult = ev => {
-    if (S.quiz !== q || q.i !== idx || q.answered !== null) return;
-    const alts = Array.from(ev.results[0] || []).map(a => a.transcript);
-    S.listening = false; rec = null;
-    const ok = alts.some(a => cur.accept.includes(normalize(a)));
-    cur.tries = (cur.tries || 0) + 1;
-    if (ok || cur.tries >= 2) { S.micMsg = ""; recordAnswer(ok, alts[0] || ""); }
-    else { S.micMsg = "J'ai entendu « " + (alts[0] || "?") + " ». Réessaie (dernier essai)."; render(); }
-  };
-  rec.onerror = ev => {
-    S.listening = false; rec = null;
-    S.micMsg = ev.error === "not-allowed" || ev.error === "service-not-allowed" ? "Micro refusé : autorise-le dans ton navigateur." : ev.error === "no-speech" ? "Je n'ai rien entendu, touche le micro pour réessayer." : "Erreur micro (" + ev.error + ").";
-    render();
-  };
-  rec.onend = () => { if (S.listening) { S.listening = false; render(); } };
-  S.listening = true; S.micMsg = "Je t'écoute…";
-  try { rec.start(); } catch(e) { S.listening = false; }
-  render();
-}
-function oralAsk(){
-  /* lit la question à voix haute puis écoute automatiquement */
-  const cur = oralCur(); if (!cur) return;
-  stopListen();
-  const q = S.quiz, idx = q.i;
-  speak(cur.prompt, cur.d === "en-fr" ? "en-GB" : "fr-FR", () => { if (S.quiz === q && q.i === idx && q.answered === null && !S.listening) listen(); });
+    const u = new SpeechSynthesisUtterance(clean); u.lang = lang || "en-GB"; u.rate = .9; s.speak(u);
+  } catch(e) {}
 }
 const speakBtn = en => (window.speechSynthesis ? `<button class="ico" data-a="speak" data-v="${esc(en)}" aria-label="Écouter la prononciation">🔊</button>` : "");
 const bestKey = () => S.kind + "-" + S.qmode + "-" + S.dir;
@@ -800,8 +757,12 @@ function makeTF(t){
   }
   return {type:"tf", t, d, prompt, shown, isTrue};
 }
+function makeOral(t){
+  const d = pickDir();
+  return {type:"oral", t, d, prompt:(d === "en-fr" ? t.en : t.fr), display:(d === "en-fr" ? t.fr : t.en)};
+}
 function makeQ(t){
-  if (S.qmode === "oral") return Object.assign(makeWrite(t), {oral:true});
+  if (S.oral) return makeOral(t);
   if (S.qmode === "write") return makeWrite(t);
   if (S.qmode === "tf") return makeTF(t);
   return makeMCQ(t);
@@ -863,7 +824,12 @@ function homeView(){
     ${seg("kind", S.kind, [["quiz","Quiz"],["flash","Flashcards"]])}
     ${S.kind === "quiz" ? `
     <div class="lbl">Format de réponse</div>
-    ${seg("qmode", S.qmode, [["mcq","QCM"],["write","À écrire"],["tf","Vrai / Faux"]].concat(SR ? [["oral","Oral 🎤"]] : []))}` : ""}
+    ${seg("qmode", S.qmode, [["mcq","QCM"],["write","À écrire"],["tf","Vrai / Faux"]])}` : ""}
+    ${S.kind === "quiz" ? `
+    <button class="toggle" data-a="oral" aria-pressed="${S.oral}">
+      <span class="box">${S.oral ? "✓" : ""}</span>
+      <span>🎤 Répondre à l'oral (sans correction)</span>
+    </button>` : ""}
     <div class="lbl">Langue</div>
     ${seg("dir", S.dir, [["en-fr","Anglais → français"],["fr-en","Français → anglais"],["mix","Les deux"]])}
     <div class="lbl">Nombre de ${unit}</div>
@@ -896,7 +862,7 @@ function quizHeader(q, n){
     <button class="link" data-a="quit">Quitter</button>
     <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${q.i + (done ? 1 : 0)}"><i style="width:${100 * (q.i + (done ? 1 : 0)) / n}%"></i></div>
   </div>
-  <div class="pts"><span>Score <b>${q.score}</b></span><span>Série <b>${q.streak}</b></span><span>Erreurs <b>${q.wrong.length}</b></span></div>`;
+  ${q.qs[0].type === "oral" ? "" : `<div class="pts"><span>Score <b>${q.score}</b></span><span>Série <b>${q.streak}</b></span><span>Erreurs <b>${q.wrong.length}</b></span></div>`}`;
 }
 
 function mcqView(q, cur, n){
@@ -930,12 +896,9 @@ function writeView(q, cur, n){
       <div class="term">${esc(cur.prompt)}</div>
     </div>
   </section>
-  ${cur.oral && !done ? `
-  <button class="mic ${S.listening ? "on" : ""}" data-a="listen">${S.listening ? "🎙️ Je t'écoute…" : "🎤 Répondre à voix haute"}</button>
-  <p class="mic-msg">${esc(S.micMsg || "La question est lue à voix haute, puis réponds au micro.")} <button class="ico" data-a="replay" aria-label="Réécouter la question">🔊</button></p>` : ""}
   <div class="${boxCls}">
     <input id="writeInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
-      placeholder="${cur.oral ? "…ou écris ta réponse" : "Écris ta réponse…"}" value="${val}" ${done ? "disabled" : ""}>
+      placeholder="Écris ta réponse…" value="${val}" ${done ? "disabled" : ""}>
     ${done ? "" : `
     <div class="write-row">
       <button class="btn" data-a="submitwrite">Valider</button>
@@ -943,6 +906,27 @@ function writeView(q, cur, n){
     </div>`}
   </div>
   ${done ? feedbackBlock(t, ok, last) : ""}`;
+}
+
+function oralView(q, cur, n){
+  const done = q.answered !== null, last = q.i === n - 1, t = cur.t;
+  const ansLang = cur.d === "en-fr" ? "fr-FR" : "en-GB", askLang = cur.d === "en-fr" ? "en-GB" : "fr-FR";
+  return `
+  <section class="sheet">
+    <div class="tb"><span>${esc(catName(t.cat))}</span><b>${q.i + 1} / ${n}</b></div>
+    <div class="q">
+      <div class="ask">${cur.d === "en-fr" ? "Dis la traduction en français…" : "Dis la traduction en anglais…"}</div>
+      <div class="term">${esc(cur.prompt)} ${window.speechSynthesis ? `<button class="ico" data-a="speaklang" data-v="${esc(cur.prompt)}" data-l="${askLang}" aria-label="Réécouter la question">🔊</button>` : ""}</div>
+    </div>
+  </section>
+  ${done ? `
+  <div class="fb ok">
+    <div class="h">Réponse</div>
+    <div class="pair"><b>${esc(cur.display)}</b> ${window.speechSynthesis ? `<button class="ico" data-a="speaklang" data-v="${esc(cur.display)}" data-l="${ansLang}" aria-label="Écouter la réponse">🔊</button>` : ""}</div>
+    ${t.note ? `<p class="note">${esc(t.note)}</p>` : ""}
+  </div>
+  <button class="btn" data-a="next">${last ? "Terminer" : "Question suivante"}</button>`
+  : `<button class="btn" data-a="reveal">Voir la réponse</button>`}`;
 }
 
 function tfView(q, cur, n){
@@ -976,12 +960,17 @@ function feedbackBlock(t, ok, last){
 
 function quizView(){
   const q = S.quiz, n = q.qs.length, cur = q.qs[q.i];
-  const body = cur.type === "write" ? writeView(q, cur, n) : cur.type === "tf" ? tfView(q, cur, n) : mcqView(q, cur, n);
+  const body = cur.type === "oral" ? oralView(q, cur, n) : cur.type === "write" ? writeView(q, cur, n) : cur.type === "tf" ? tfView(q, cur, n) : mcqView(q, cur, n);
   return quizHeader(q, n) + body;
 }
 
 function resultView(){
-  const q = S.quiz, n = q.qs.length, pct = Math.round(100 * q.score / n);
+  const q = S.quiz, n = q.qs.length;
+  if (q.qs[0].type === "oral") return `
+  <header class="hero"><span class="tag"><i></i>Oral</span><h1>Série terminée</h1></header>
+  <section class="sheet"><div class="score"><div class="n">${n}</div><p>mots passés à l'oral</p></div></section>
+  <div class="btns"><button class="btn" data-a="again">Nouvelle série</button><button class="btn alt" data-a="home">Accueil</button></div>`;
+  const pct = Math.round(100 * q.score / n);
   const msg = pct >= 90 ? "Autorisé au décollage." : pct >= 70 ? "Bon vol, encore quelques réglages." : pct >= 50 ? "Un peu de turbulences, ça se rattrape." : "Retour au hangar pour une révision.";
   return `
   <header class="hero"><span class="tag"><i></i>Fiche de résultat</span><h1>Résultat</h1></header>
@@ -1049,12 +1038,14 @@ function render(top){
   if (top) window.scrollTo(0, 0);
   if (S.view === "quiz") {
     const cur = S.quiz.qs[S.quiz.i];
-    if (cur.type === "write" && S.quiz.answered === null && !cur.oral) {
+    if (cur.type === "oral" && S.quiz.answered === null && S.quiz.askedI !== S.quiz.i) {
+      S.quiz.askedI = S.quiz.i; speak(cur.prompt, cur.d === "en-fr" ? "en-GB" : "fr-FR");
+    }
+    if (cur.type === "write" && S.quiz.answered === null) {
       const inp = document.getElementById("writeInput");
       if (inp) inp.focus();
     }
-    if (cur.oral && S.quiz.answered === null && S.quiz.askedI !== S.quiz.i) { S.quiz.askedI = S.quiz.i; S.micMsg = ""; setTimeout(oralAsk, 250); }
-  } else { stopListen(); }
+  }
 }
 
 /* ---------- Logique ---------- */
@@ -1107,7 +1098,6 @@ function skipWrite(){
 }
 function next(){
   const q = S.quiz; if (q.answered === null) return;
-  stopListen(); S.micMsg = "";
   if (q.i >= q.qs.length - 1) {
     const pct = Math.round(100 * q.score / q.qs.length);
     if (q.qs.length >= 5 && (store.best[bestKey()] == null || pct > store.best[bestKey()])) store.best[bestKey()] = pct;
@@ -1153,8 +1143,9 @@ function act(a, v){
     case "know": flashAdvance(true); break;
     case "review": flashAdvance(false); break;
     case "speak": speak(v); break;
-    case "listen": S.listening ? (stopListen(), S.micMsg = "", render()) : listen(); break;
-    case "replay": oralAsk(); break;
+    case "speaklang": { const el = document.querySelector('[data-a="speaklang"][data-v="' + v.replace(/"/g, '\\"') + '"]'); speak(v, el && el.dataset.l); break; }
+    case "oral": S.oral = !S.oral; render(); break;
+    case "reveal": { const q = S.quiz, cur = q.qs[q.i]; if (q.answered === null) { q.answered = {correct:true, oral:true}; render(); speak(cur.display, cur.d === "en-fr" ? "fr-FR" : "en-GB"); } break; }
   }
 }
 $app.addEventListener("click", e => {
@@ -1182,6 +1173,10 @@ document.addEventListener("keydown", e => {
   const typing = (e.target.tagName || "").toLowerCase() === "input";
   if (S.view === "quiz") {
     const cur = S.quiz.qs[S.quiz.i], done = S.quiz.answered !== null;
+    if (cur.type === "oral") {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); done ? next() : act("reveal"); }
+      return;
+    }
     if (cur.type === "write") {
       if (e.key === "Enter") { e.preventDefault(); done ? next() : submitWrite(); }
       return;
