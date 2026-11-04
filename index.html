@@ -797,7 +797,7 @@ function noticeBlock(){
   return `
   <${tag}${attrs}>
     <span class="pin">📌</span>
-    <div><b>À réviser</b> — ${esc(REVIEW_NOTICE.text)}<span class="date">Mis à jour le ${esc(REVIEW_NOTICE.date)}</span>${hasPreset ? `<span class="cta">👉 Toucher ici pour lancer le quiz en réponse écrite sur ce vocabulaire</span>` : ""}</div>
+    <div><b>À réviser</b> — ${esc(REVIEW_NOTICE.text)}<span class="date">Mis à jour le ${esc(REVIEW_NOTICE.date)}</span>${hasPreset ? `<span class="cta">👉 Toucher ici pour lancer le quiz en réponse écrite (anglais ↔ français) sur ce vocabulaire</span>` : ""}</div>
   </${tag}>`;
 }
 function homeView(){
@@ -1127,7 +1127,7 @@ function act(a, v){
     case "revisenow":
       /* Le bandeau ignore volontairement les réglages (nombre de questions, langue, format…) :
          il couvre TOUJOURS la totalité du vocabulaire préréglé pour le test, en réponse écrite. */
-      applyReviewPreset(); S.kind = "quiz"; S.qmode = "write";
+      applyReviewPreset(); S.kind = "quiz"; S.qmode = "write"; S.dir = "mix"; S.oral = false;
       startWith(shuffle(pool()));
       break;
     case "choose": choose(+v); break;
