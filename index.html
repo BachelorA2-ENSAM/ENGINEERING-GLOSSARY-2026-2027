@@ -1085,7 +1085,12 @@ function act(a, v){
     case "weakonly": S.weakOnly = !S.weakOnly; render(); break;
     case "resetweak": store.weak = {}; S.weakOnly = false; saveStore(); render(); break;
     case "start": start(); break;
-    case "revisenow": applyReviewPreset(); S.kind = "quiz"; S.qmode = "write"; start(); break;
+    case "revisenow":
+      /* Le bandeau ignore volontairement les réglages (nombre de questions, langue, format…) :
+         il couvre TOUJOURS la totalité du vocabulaire préréglé pour le test, en réponse écrite. */
+      applyReviewPreset(); S.kind = "quiz"; S.qmode = "write";
+      startWith(shuffle(pool()));
+      break;
     case "choose": choose(+v); break;
     case "submitwrite": submitWrite(); break;
     case "skipwrite": skipWrite(); break;
