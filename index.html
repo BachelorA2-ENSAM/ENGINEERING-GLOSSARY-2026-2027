@@ -80,6 +80,16 @@ h1,h2,.disp{font-family:"Fraunces",Georgia,serif;font-weight:600;letter-spacing:
 .toggle .box{width:20px;height:20px;border:1px solid var(--line);border-radius:6px;display:grid;place-items:center;flex:none;font-weight:700;font-size:13px;background:var(--card)}
 .toggle[aria-pressed="true"] .box{background:var(--btn-bg);color:var(--btn-ink);border-color:var(--btn-bg)}
 .toggle:disabled{opacity:.5;cursor:not-allowed}
+.range-pick{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-top:4px}
+.range-pick label{display:flex;align-items:center;gap:7px;font-size:13.5px;color:var(--muted);font-weight:600}
+.range-pick input[type="number"]{width:62px;padding:7px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-family:"Manrope",sans-serif;font-size:14px;font-weight:700;text-align:center}
+.range-pick .rp-sep{color:var(--muted);font-size:13px}
+.range-pick .rp-reset{margin-left:auto}
+.range-hint{font-size:12.5px;color:var(--muted);margin:7px 2px 0}
+.notice{display:flex;gap:10px;align-items:flex-start;background:var(--soft);border:1px solid var(--hl);border-radius:14px;padding:13px 16px;margin-bottom:16px;font-size:14px;line-height:1.5;box-shadow:var(--shadow)}
+.notice .pin{flex:none;font-size:17px;line-height:1.3}
+.notice b{color:var(--hl)}
+.notice .date{display:block;margin-top:4px;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 
 .btn{display:block;width:100%;padding:15px 18px;border:1px solid var(--btn-bg);border-radius:12px;background:var(--btn-bg);color:var(--btn-ink);font-size:16px;font-weight:700;font-family:"Manrope",sans-serif;box-shadow:var(--shadow)}
 .btn.alt{background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:none}
@@ -167,6 +177,12 @@ h1,h2,.disp{font-family:"Fraunces",Georgia,serif;font-weight:600;letter-spacing:
 <body>
 <div id="app"></div>
 <script>
+/* ---------- Bandeau "à réviser" (mis à jour automatiquement depuis les mails de Charlotte Quervet) ---------- */
+const REVIEW_NOTICE = { text: "Pour le test du 5 novembre : Chapitre 1 « People, jobs and responsibilities » (entier) et Chapitre 2 « Companies and management », de « accountability » à « lean management ». Pas de transcription phonétique au test.", date: "2026-11-04" };
+/* Exemple de format quand rempli :
+const REVIEW_NOTICE = { text: "Pour le test du 5 nov. : Chapitre 1 (entier) et Chapitre 2 « Companies and management » de « accountability » à « lean management ».", date: "2026-11-04" };
+*/
+
 /* ---------- Données : "anglais|français|note optionnelle" ---------- */
 const RAW = {
 people:{name:"People, jobs and responsibilities",items:`
@@ -649,14 +665,28 @@ function saveStore(){ try { localStorage.setItem(KEY, JSON.stringify(store)); } 
 /* ---------- État ---------- */
 const S = {
   view:"home", kind:"quiz", qmode:"mcq", dir:"en-fr", count:20, weakOnly:false,
-  cats:new Set(CATS.map(c => c.id)), quiz:null, flash:null
+  cats:new Set(CATS.map(c => c.id)), quiz:null, flash:null,
+  rangeFrom:1, rangeTo:null
 };
 
 /* ---------- Utilitaires ---------- */
 const $app = document.getElementById("app");
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function shuffle(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-function pool(){ return TERMS.filter(t => S.cats.has(t.cat) && (!S.weakOnly || store.weak[t.en])); }
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+/* liste ordonnée des termes d'un seul thème (ordre du PDF), pour la plage personnalisée */
+function catTerms(catId){ return TERMS.filter(t => t.cat === catId); }
+function resetRange(){ S.rangeFrom = 1; S.rangeTo = null; }
+function pool(){
+  if (S.cats.size === 1) {
+    const [catId] = S.cats;
+    const ct = catTerms(catId), max = ct.length;
+    const from = clamp(S.rangeFrom || 1, 1, max);
+    const to = clamp(S.rangeTo || max, from, max);
+    return ct.slice(from - 1, to).filter(t => !S.weakOnly || store.weak[t.en]);
+  }
+  return TERMS.filter(t => S.cats.has(t.cat) && (!S.weakOnly || store.weak[t.en]));
+}
 function speak(txt){
   try {
     const s = window.speechSynthesis; if (!s) return;
@@ -720,6 +750,29 @@ function seg(action, cur, opts){
   return `<div class="seg" role="group">${opts.map(([v,l]) => `<button class="segb" data-a="${action}" data-v="${v}" aria-pressed="${String(cur) === String(v)}">${l}</button>`).join("")}</div>`;
 }
 
+function rangePicker(){
+  const [catId] = S.cats;
+  const ct = catTerms(catId), max = ct.length;
+  const from = clamp(S.rangeFrom || 1, 1, max);
+  const to = clamp(S.rangeTo || max, from, max);
+  const limited = !(from === 1 && to === max);
+  return `
+  <div class="range-pick">
+    <label>Du mot n° <input type="number" inputmode="numeric" min="1" max="${max}" value="${from}" data-a="rangefrom" data-rangemax="${max}"></label>
+    <span class="rp-sep">au mot n°</span>
+    <label><input type="number" inputmode="numeric" min="1" max="${max}" value="${to}" data-a="rangeto" data-rangemax="${max}"></label>
+    ${limited ? `<button class="link rp-reset" data-a="rangereset">Réinitialiser</button>` : ""}
+  </div>
+  <div class="range-hint">« ${esc(catName(catId))} » compte ${max} mots, dans l'ordre du PDF — choisis une plage (ex. 1 à 15) pour réviser juste une partie.</div>`;
+}
+function noticeBlock(){
+  if (!REVIEW_NOTICE) return "";
+  return `
+  <div class="notice">
+    <span class="pin">📌</span>
+    <div><b>À réviser</b> — ${esc(REVIEW_NOTICE.text)}<span class="date">Mis à jour le ${esc(REVIEW_NOTICE.date)}</span></div>
+  </div>`;
+}
 function homeView(){
   const n = pool().length, weakN = Object.keys(store.weak).length;
   const acc = store.answered ? Math.round(100 * store.correct / store.answered) : null;
@@ -731,6 +784,7 @@ function homeView(){
     <h1>Quiz du glossaire d'ingénierie</h1>
     <p>Engineering Glossary 2026-2027 — révision anglais technique.</p>
   </header>
+  ${noticeBlock()}
   <div class="stats">
     <div><b>${store.answered}</b><span>réponses</span></div>
     <div><b>${acc === null ? "–" : acc + "%"}</b><span>réussite</span></div>
@@ -756,6 +810,7 @@ function homeView(){
       const k = TERMS.filter(t => t.cat === c.id).length;
       return `<button class="chip" data-a="cat" data-v="${c.id}" aria-pressed="${S.cats.has(c.id)}">${esc(c.name)}<small>${k}</small></button>`;
     }).join("")}</div>
+    ${S.cats.size === 1 ? rangePicker() : ""}
     <button class="toggle" data-a="weakonly" aria-pressed="${S.weakOnly}" ${weakN === 0 ? "disabled" : ""}>
       <span class="box">${S.weakOnly ? "✓" : ""}</span>
       <span>Seulement mes points faibles (${weakN})</span>
@@ -1001,9 +1056,10 @@ function act(a, v){
     case "qmode": S.qmode = v; render(); break;
     case "dir": S.dir = v; render(); break;
     case "count": S.count = +v; render(); break;
-    case "cat": S.cats.has(v) ? S.cats.delete(v) : S.cats.add(v); render(); break;
-    case "catall": S.cats = new Set(CATS.map(c => c.id)); render(); break;
-    case "catnone": S.cats = new Set(); render(); break;
+    case "cat": S.cats.has(v) ? S.cats.delete(v) : S.cats.add(v); resetRange(); render(); break;
+    case "catall": S.cats = new Set(CATS.map(c => c.id)); resetRange(); render(); break;
+    case "catnone": S.cats = new Set(); resetRange(); render(); break;
+    case "rangereset": resetRange(); render(); break;
     case "weakonly": S.weakOnly = !S.weakOnly; render(); break;
     case "resetweak": store.weak = {}; S.weakOnly = false; saveStore(); render(); break;
     case "start": start(); break;
@@ -1025,6 +1081,20 @@ function act(a, v){
 $app.addEventListener("click", e => {
   const el = e.target.closest("[data-a]"); if (!el || el.disabled) return;
   act(el.dataset.a, el.dataset.v);
+});
+$app.addEventListener("change", e => {
+  const el = e.target.closest('[data-a="rangefrom"],[data-a="rangeto"]'); if (!el) return;
+  const max = +el.dataset.rangemax || 1;
+  let val = Math.round(+el.value); if (!Number.isFinite(val)) val = 1;
+  val = clamp(val, 1, max);
+  if (el.dataset.a === "rangefrom") {
+    S.rangeFrom = val;
+    if (S.rangeTo && S.rangeTo < val) S.rangeTo = val;
+  } else {
+    S.rangeTo = val;
+    if (S.rangeFrom && S.rangeFrom > val) S.rangeFrom = val;
+  }
+  render();
 });
 document.addEventListener("keydown", e => {
   const typing = (e.target.tagName || "").toLowerCase() === "input";
