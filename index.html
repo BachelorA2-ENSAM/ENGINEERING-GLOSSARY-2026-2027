@@ -177,10 +177,14 @@ h1,h2,.disp{font-family:"Fraunces",Georgia,serif;font-weight:600;letter-spacing:
 <body>
 <div id="app"></div>
 <script>
-/* ---------- Bandeau "à réviser" (mis à jour automatiquement depuis les mails de Charlotte Quervet) ---------- */
-const REVIEW_NOTICE = { text: "Pour le test du 5 novembre : Chapitre 1 « People, jobs and responsibilities » (entier) et Chapitre 2 « Companies and management », de « accountability » à « lean management ». Pas de transcription phonétique au test.", date: "2026-11-04" };
-/* Exemple de format quand rempli :
-const REVIEW_NOTICE = { text: "Pour le test du 5 nov. : Chapitre 1 (entier) et Chapitre 2 « Companies and management » de « accountability » à « lean management ».", date: "2026-11-04" };
+/* ---------- Bandeau "à réviser" + pré-sélection automatique (mis à jour depuis les mails de Charlotte Quervet) ---------- */
+const REVIEW_NOTICE = { text: "Pour le test du 5 novembre : Chapitre 1 « People, jobs and responsibilities » (entier) et Chapitre 2 « Companies and management », de « accountability » à « lean management ». Pas de transcription phonétique au test. Le quiz ci-dessous est déjà réglé sur ce vocabulaire.", date: "2026-11-04" };
+/* items : un ou plusieurs {cat, from?, to?} — cat = clé du thème dans RAW ; from/to = plage de mots (1-indexé,
+   dans l'ordre du PDF) à l'intérieur de ce thème ; from/to omis = thème entier. date = date du jour du mail. */
+const REVIEW_PRESET = { items: [ {cat:"people"}, {cat:"company", from:1, to:14} ], date: "2026-11-04" };
+/* Pour tout effacer (pas de rappel en cours) :
+const REVIEW_NOTICE = null;
+const REVIEW_PRESET = null;
 */
 
 /* ---------- Données : "anglais|français|note optionnelle" ---------- */
@@ -666,7 +670,7 @@ function saveStore(){ try { localStorage.setItem(KEY, JSON.stringify(store)); } 
 const S = {
   view:"home", kind:"quiz", qmode:"mcq", dir:"en-fr", count:20, weakOnly:false,
   cats:new Set(CATS.map(c => c.id)), quiz:null, flash:null,
-  rangeFrom:1, rangeTo:null
+  presetRanges:{} /* {catId: {from, to}} — plages actives (manuelles ou issues de REVIEW_PRESET), 1-indexé */
 };
 
 /* ---------- Utilitaires ---------- */
@@ -676,17 +680,28 @@ function shuffle(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--) { con
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 /* liste ordonnée des termes d'un seul thème (ordre du PDF), pour la plage personnalisée */
 function catTerms(catId){ return TERMS.filter(t => t.cat === catId); }
-function resetRange(){ S.rangeFrom = 1; S.rangeTo = null; }
-function pool(){
-  if (S.cats.size === 1) {
-    const [catId] = S.cats;
-    const ct = catTerms(catId), max = ct.length;
-    const from = clamp(S.rangeFrom || 1, 1, max);
-    const to = clamp(S.rangeTo || max, from, max);
-    return ct.slice(from - 1, to).filter(t => !S.weakOnly || store.weak[t.en]);
+function clearRanges(){ S.presetRanges = {}; }
+function applyReviewPreset(){
+  if (!REVIEW_PRESET || !Array.isArray(REVIEW_PRESET.items) || !REVIEW_PRESET.items.length) return;
+  const cats = new Set(), ranges = {};
+  for (const it of REVIEW_PRESET.items) {
+    if (!it || !it.cat || !RAW[it.cat]) continue;
+    cats.add(it.cat);
+    if (it.from || it.to) {
+      const max = catTerms(it.cat).length;
+      ranges[it.cat] = { from: clamp(it.from || 1, 1, max), to: clamp(it.to || max, 1, max) };
+    }
   }
-  return TERMS.filter(t => S.cats.has(t.cat) && (!S.weakOnly || store.weak[t.en]));
+  if (cats.size) { S.cats = cats; S.presetRanges = ranges; }
 }
+function inRange(t){
+  const r = S.presetRanges[t.cat];
+  if (!r) return true;
+  const idx = catTerms(t.cat).findIndex(x => x.en === t.en);
+  return idx >= r.from - 1 && idx <= r.to - 1;
+}
+function pool(){ return TERMS.filter(t => S.cats.has(t.cat) && inRange(t) && (!S.weakOnly || store.weak[t.en])); }
+applyReviewPreset();
 function speak(txt){
   try {
     const s = window.speechSynthesis; if (!s) return;
@@ -753,9 +768,10 @@ function seg(action, cur, opts){
 function rangePicker(){
   const [catId] = S.cats;
   const ct = catTerms(catId), max = ct.length;
-  const from = clamp(S.rangeFrom || 1, 1, max);
-  const to = clamp(S.rangeTo || max, from, max);
-  const limited = !(from === 1 && to === max);
+  const r = S.presetRanges[catId];
+  const from = r ? clamp(r.from, 1, max) : 1;
+  const to = r ? clamp(r.to, 1, max) : max;
+  const limited = !!r && !(from === 1 && to === max);
   return `
   <div class="range-pick">
     <label>Du mot n° <input type="number" inputmode="numeric" min="1" max="${max}" value="${from}" data-a="rangefrom" data-rangemax="${max}"></label>
@@ -1056,10 +1072,10 @@ function act(a, v){
     case "qmode": S.qmode = v; render(); break;
     case "dir": S.dir = v; render(); break;
     case "count": S.count = +v; render(); break;
-    case "cat": S.cats.has(v) ? S.cats.delete(v) : S.cats.add(v); resetRange(); render(); break;
-    case "catall": S.cats = new Set(CATS.map(c => c.id)); resetRange(); render(); break;
-    case "catnone": S.cats = new Set(); resetRange(); render(); break;
-    case "rangereset": resetRange(); render(); break;
+    case "cat": S.cats.has(v) ? S.cats.delete(v) : S.cats.add(v); clearRanges(); render(); break;
+    case "catall": S.cats = new Set(CATS.map(c => c.id)); clearRanges(); render(); break;
+    case "catnone": S.cats = new Set(); clearRanges(); render(); break;
+    case "rangereset": { const [cid] = S.cats; delete S.presetRanges[cid]; render(); break; }
     case "weakonly": S.weakOnly = !S.weakOnly; render(); break;
     case "resetweak": store.weak = {}; S.weakOnly = false; saveStore(); render(); break;
     case "start": start(); break;
@@ -1084,16 +1100,19 @@ $app.addEventListener("click", e => {
 });
 $app.addEventListener("change", e => {
   const el = e.target.closest('[data-a="rangefrom"],[data-a="rangeto"]'); if (!el) return;
+  const [catId] = S.cats; if (!catId) return;
   const max = +el.dataset.rangemax || 1;
   let val = Math.round(+el.value); if (!Number.isFinite(val)) val = 1;
   val = clamp(val, 1, max);
+  const cur = S.presetRanges[catId] || {from:1, to:max};
   if (el.dataset.a === "rangefrom") {
-    S.rangeFrom = val;
-    if (S.rangeTo && S.rangeTo < val) S.rangeTo = val;
+    cur.from = val;
+    if (cur.to < val) cur.to = val;
   } else {
-    S.rangeTo = val;
-    if (S.rangeFrom && S.rangeFrom > val) S.rangeFrom = val;
+    cur.to = val;
+    if (cur.from > val) cur.from = val;
   }
+  S.presetRanges[catId] = cur;
   render();
 });
 document.addEventListener("keydown", e => {
